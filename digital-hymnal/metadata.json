@@ -1,0 +1,6 @@
+{
+  "name": "Digital Hymnal",
+  "description": "A modern, responsive web application for browsing, searching, and singing church hymns, based on The Open Hymnal project. Includes features for viewing lyrics, listening to audio, and discovering new hymns.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

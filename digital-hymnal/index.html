@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Hymnal</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            colors: {
+              'brand-blue': {
+                '50': '#f0f8ff',
+                '100': '#e0f0ff',
+                '200': '#c2e3ff',
+                '300': '#94d1ff',
+                '400': '#61b9ff',
+                '500': '#3b9eff',
+                '600': '#1b7fff',
+                '700': '#0a6bff',
+                '800': '#0855d4',
+                '900': '#0a47a1',
+                '950': '#0d2c60',
+              },
+              'brand-gold': {
+                '50': '#fefcf3',
+                '100': '#fcf6d9',
+                '200': '#f9eab2',
+                '300': '#f5d880',
+                '400': '#f2c04e',
+                '500': '#eca92c',
+                '600': '#d98c1d',
+                '700': '#b46b17',
+                '800': '#92541a',
+                '900': '#78451b',
+                '950': '#44240c',
+              }
+            }
+          }
+        }
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.7.1",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.11.0",
+    "vite": "https://esm.sh/vite@^7.0.6",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.7.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
