@@ -1,18 +1,43 @@
 import React, { useState, useMemo, useEffect, useCallback, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useHymns } from '../hooks/useHymns';
-import { Category, GeneratedHymn } from '../types';
+import { Category, GeneratedHymn, Hymn, Language } from '../types';
 import CategoryPill from '../components/CategoryPill';
 import { ChevronDownIcon, SparklesIcon, HeartIcon } from '../components/icons/Icons';
 import { LanguageContext } from '../context/LanguageContext';
 import { searchAndGenerateHymn } from '../services/geminiService';
 import { useLikes } from '../context/LikesContext';
+import { useTranslatedContent } from '../hooks/useTranslatedContent';
 
 
 interface HymnListPageProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
 }
+
+const HymnRow: React.FC<{hymn: Hymn}> = ({ hymn }) => {
+    const { language } = useContext(LanguageContext);
+    const { isLiked, toggleLike } = useLikes();
+    const { text: translatedTitle } = useTranslatedContent(hymn.title, hymn.title.en || '');
+    const { text: translatedLyrics } = useTranslatedContent(hymn.lyrics, hymn.lyrics.en || '');
+
+    return (
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm hover:shadow-md hover:bg-brand-blue-50 transition-all">
+            <Link to={`/hymns/${hymn.id}`} className="flex-grow">
+                <p className="font-semibold text-brand-blue-900">{hymn.number}. {translatedTitle}</p>
+                <p className="text-sm text-gray-500 hidden md:block">{translatedLyrics.substring(0, 80)}...</p>
+                <CategoryPill category={hymn.category} className="mt-2" />
+            </Link>
+            <button 
+                onClick={(e) => { e.preventDefault(); toggleLike(hymn); }} 
+                className="p-2 rounded-full hover:bg-red-100" 
+                aria-label={`Like ${translatedTitle}`}
+            >
+                <HeartIcon className={`h-6 w-6 ${isLiked(hymn) ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`} filled={isLiked(hymn)} />
+            </button>
+        </div>
+    );
+};
 
 const HymnListPage: React.FC<HymnListPageProps> = ({ searchTerm, setSearchTerm }) => {
   const { hymns, isLoading, error } = useHymns();
@@ -49,12 +74,28 @@ const HymnListPage: React.FC<HymnListPageProps> = ({ searchTerm, setSearchTerm }
     return hymns
       .filter(hymn => {
         const categoryMatch = selectedCategory === 'all' || hymn.category === selectedCategory;
-        const searchMatch = !searchTerm ||
-          (hymn.title[language] || hymn.title.en)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hymn.number.toString().includes(searchTerm);
-        return categoryMatch && searchMatch;
+        
+        if (!categoryMatch) return false;
+
+        if (!searchTerm) return true;
+
+        const lowerSearchTerm = searchTerm.toLowerCase();
+
+        // Check original English content
+        if (hymn.title.en?.toLowerCase().includes(lowerSearchTerm) || hymn.number.toString().includes(lowerSearchTerm)) {
+            return true;
+        }
+
+        // Check other languages if they exist
+        for (const lang in hymn.title) {
+            if (hymn.title[lang as Language]?.toLowerCase().includes(lowerSearchTerm)) {
+                return true;
+            }
+        }
+        
+        return false;
       });
-  }, [hymns, selectedCategory, searchTerm, language]);
+  }, [hymns, selectedCategory, searchTerm]);
 
   const handleGenerateHymn = useCallback(async () => {
     if (!searchTerm) return;
@@ -86,22 +127,7 @@ const HymnListPage: React.FC<HymnListPageProps> = ({ searchTerm, setSearchTerm }
     if (filteredHymns.length > 0) {
       return (
         <div className="space-y-3">
-          {filteredHymns.map(hymn => (
-            <div key={hymn.id} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm hover:shadow-md hover:bg-brand-blue-50 transition-all">
-              <Link to={`/hymns/${hymn.id}`} className="flex-grow">
-                <p className="font-semibold text-brand-blue-900">{hymn.number}. {hymn.title[language] || hymn.title.en}</p>
-                <p className="text-sm text-gray-500 hidden md:block">{(hymn.lyrics[language] || hymn.lyrics.en)?.substring(0, 80)}...</p>
-                <CategoryPill category={hymn.category} className="mt-2" />
-              </Link>
-              <button 
-                onClick={(e) => { e.preventDefault(); toggleLike(hymn); }} 
-                className="p-2 rounded-full hover:bg-red-100" 
-                aria-label={`Like ${hymn.title[language] || hymn.title.en}`}
-              >
-                  <HeartIcon className={`h-6 w-6 ${isLiked(hymn) ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`} filled={isLiked(hymn)} />
-              </button>
-            </div>
-          ))}
+          {filteredHymns.map(hymn => <HymnRow key={hymn.id} hymn={hymn} />)}
         </div>
       );
     }

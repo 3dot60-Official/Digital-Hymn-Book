@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback } from 'react';
 import { Hymn, GeneratedHymn } from '../types';
+import { useAuth } from './AuthContext';
 
 type LikedItem = (Hymn | GeneratedHymn) & { likedAt: number };
 
@@ -30,21 +31,26 @@ const getItemId = (item: Hymn | GeneratedHymn): string => {
 
 export const LikesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [likedItems, setLikedItems] = useState<LikedItem[]>([]);
+  const { user } = useAuth();
+  const storageKey = user ? `likedHymns-${user.id}` : 'likedHymns-guest';
 
   useEffect(() => {
     try {
-      const storedLikes = localStorage.getItem('likedHymns');
+      const storedLikes = localStorage.getItem(storageKey);
       if (storedLikes) {
         setLikedItems(JSON.parse(storedLikes));
+      } else {
+        setLikedItems([]); 
       }
     } catch (error) {
       console.error("Could not parse liked hymns from localStorage", error);
+      setLikedItems([]);
     }
-  }, []);
+  }, [storageKey]);
 
   const saveLikes = (items: LikedItem[]) => {
     try {
-      localStorage.setItem('likedHymns', JSON.stringify(items));
+      localStorage.setItem(storageKey, JSON.stringify(items));
     } catch (error) {
       console.error("Could not save liked hymns to localStorage", error);
     }
@@ -70,7 +76,7 @@ export const LikesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       saveLikes(newItems);
       return newItems;
     });
-  }, []);
+  }, [saveLikes]);
 
   const getLikedHymns = (allHymns: Hymn[]): Hymn[] => {
       const likedHymnIds = new Set(likedItems.filter(item => 'id' in item).map(item => (item as Hymn).id));
@@ -78,7 +84,7 @@ export const LikesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
   
   const getLikedGeneratedHymns = (): GeneratedHymn[] => {
-      return likedItems.filter(item => !('id' in item)) as GeneratedHymn[];
+      return likedItems.filter(item => !('id' in item)).sort((a,b) => b.likedAt - a.likedAt) as GeneratedHymn[];
   };
 
   return (

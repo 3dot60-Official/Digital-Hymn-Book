@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { MusicNoteIcon, BookOpenIcon, SparklesIcon, CogIcon, ChevronDownIcon, HeartIcon } from './icons/Icons';
+import { MusicNoteIcon, BookOpenIcon, SparklesIcon, ChevronDownIcon, UserIcon } from './icons/Icons';
 import { LanguageContext } from '../context/LanguageContext';
 import { Language, LanguageLabels } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   searchTerm: string;
@@ -11,7 +12,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
   const { language, setLanguage } = useContext(LanguageContext);
-  const navLinkClasses = "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-brand-blue-100 hover:text-brand-blue-800 transition-colors";
+  const { isLoggedIn, user, login, logout } = useAuth();
+  const navLinkClasses = "flex flex-col items-center gap-1 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-brand-blue-100 hover:text-brand-blue-800 transition-colors md:flex-row md:gap-2";
   const activeNavLinkClasses = "bg-brand-blue-100 text-brand-blue-800";
   const navigate = useNavigate();
 
@@ -41,6 +43,20 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
     </div>
   );
 
+  const AuthButtons = () => (
+    <div className="flex items-center gap-2">
+      {isLoggedIn ? (
+        <button onClick={logout} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-300">
+          Logout
+        </button>
+      ) : (
+        <button onClick={login} className="bg-brand-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-brand-blue-800">
+          Login / Sign Up
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -49,51 +65,52 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
             <MusicNoteIcon className="h-8 w-8 text-brand-blue-700" />
             <span className="font-serif text-2xl font-bold text-gray-800">Digital Hymnal</span>
           </Link>
-          <div className="flex-grow flex items-center justify-end gap-4">
-            <nav className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex flex-grow items-center justify-end gap-4">
+            <nav className="flex items-center space-x-2">
               <NavLink to="/hymns" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
                 <BookOpenIcon className="h-5 w-5" />
                 <span>Hymns</span>
-              </NavLink>
-              <NavLink to="/favorites" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
-                <HeartIcon className="h-5 w-5" />
-                <span>Favorites</span>
               </NavLink>
               <NavLink to="/inspiration" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
                 <SparklesIcon className="h-5 w-5" />
                 <span>Inspiration</span>
               </NavLink>
-              <NavLink to="/admin" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
-                <CogIcon className="h-5 w-5" />
-                <span>Admin</span>
+              <NavLink to="/portal" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
+                <UserIcon className="h-5 w-5" />
+                <span>Portal</span>
               </NavLink>
             </nav>
-            <div className="hidden md:block">
-              <LanguageSelector />
-            </div>
-            <div className="w-full max-w-xs">
+            <LanguageSelector />
+            <AuthButtons />
+          </div>
+          <div className="md:hidden">
+              <AuthButtons />
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden flex items-center justify-around py-2 border-t border-gray-200">
+           <NavLink to="/hymns" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
+              <BookOpenIcon className="h-6 w-6" />
+              <span className="text-xs">Hymns</span>
+            </NavLink>
+            <NavLink to="/inspiration" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
+              <SparklesIcon className="h-6 w-6" />
+               <span className="text-xs">Inspiration</span>
+            </NavLink>
+             <NavLink to="/portal" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
+                <UserIcon className="h-6 w-6" />
+                <span className="text-xs">Portal</span>
+            </NavLink>
+            <div className="w-full max-w-xs ml-4">
               <input
                 type="search"
-                placeholder="Search hymns..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-blue-500 focus:border-brand-blue-500 transition-shadow text-sm"
               />
             </div>
-          </div>
-        </div>
-        {/* Mobile Navigation */}
-        <div className="md:hidden flex items-center justify-around py-2 border-t border-gray-200">
-           <NavLink to="/hymns" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
-              <BookOpenIcon className="h-5 w-5" />
-            </NavLink>
-            <NavLink to="/favorites" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
-                <HeartIcon className="h-5 w-5" />
-            </NavLink>
-            <NavLink to="/inspiration" className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`}>
-              <SparklesIcon className="h-5 w-5" />
-            </NavLink>
-            <LanguageSelector />
         </div>
       </div>
     </header>

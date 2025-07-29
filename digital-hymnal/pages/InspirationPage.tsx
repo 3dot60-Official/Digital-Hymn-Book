@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useContext } from 'react';
-import { Category } from '../types';
+import { Category, Inspiration } from '../types';
 import { generateInspiration } from '../services/geminiService';
 import { SparklesIcon } from '../components/icons/Icons';
-import CategoryPill from '../components/CategoryPill';
 import { LanguageContext } from '../context/LanguageContext';
 
 const InspirationPage: React.FC = () => {
-  const [inspiration, setInspiration] = useState('');
+  const [inspiration, setInspiration] = useState<Inspiration | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>(Category.Praise);
@@ -15,10 +14,14 @@ const InspirationPage: React.FC = () => {
   const handleGenerate = useCallback(async () => {
     setIsLoading(true);
     setError('');
-    setInspiration('');
+    setInspiration(null);
     try {
       const result = await generateInspiration(selectedCategory, language);
-      setInspiration(result);
+      if(result.bibleVerse) {
+        setInspiration(result);
+      } else {
+        setError(result.inspirationalText);
+      }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
       console.error(err);
@@ -35,7 +38,7 @@ const InspirationPage: React.FC = () => {
         <SparklesIcon className="h-16 w-16 mx-auto text-brand-gold-500" />
         <h1 className="font-serif text-3xl md:text-4xl font-bold text-gray-900 mt-4">Daily Inspiration</h1>
         <p className="mt-2 text-gray-600">
-          Select a theme and generate a short, uplifting message to brighten your day.
+          Select a theme and generate a short, uplifting message grounded in scripture.
         </p>
 
         <div className="mt-6">
@@ -81,7 +84,8 @@ const InspirationPage: React.FC = () => {
           {inspiration && (
             <div>
               <h3 className="font-bold text-lg text-gray-800 mb-2">A Moment of {selectedCategory}</h3>
-              <p className="text-gray-700 leading-relaxed">{inspiration}</p>
+              <p className="text-gray-700 leading-relaxed italic">"{inspiration.inspirationalText}"</p>
+              <p className="text-right mt-4 font-semibold text-gray-800">- {inspiration.bibleVerse}</p>
             </div>
           )}
         </div>

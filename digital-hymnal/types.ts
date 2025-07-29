@@ -38,10 +38,16 @@ export interface Hymn {
   category: Category;
   lyrics: { [key in Language]?: string };
   audioUrl?: string;
+  sheetMusicUrl?: string[];
   createdAt: string;
 }
 
 export interface GeneratedHymn {
     title: string;
     lyrics: string;
+}
+
+export interface Inspiration {
+    inspirationalText: string;
+    bibleVerse: string;
 }

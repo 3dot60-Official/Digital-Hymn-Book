@@ -7,12 +7,34 @@ import { BookOpenIcon, HeartIcon } from '../components/icons/Icons';
 import { LanguageContext } from '../context/LanguageContext';
 import AiHymnGenerator from '../components/AiHymnGenerator';
 import { useLikes } from '../context/LikesContext';
+import { useTranslatedContent } from '../hooks/useTranslatedContent';
+
+
+const HymnTile: React.FC<{ hymn: Hymn }> = ({ hymn }) => {
+    const { isLiked, toggleLike } = useLikes();
+    const { text: translatedTitle } = useTranslatedContent(hymn.title, hymn.title.en || 'Untitled');
+    
+    return (
+        <div className="relative bg-white p-4 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group">
+            <Link to={`/hymns/${hymn.id}`} className="block">
+                <p className="font-semibold text-brand-blue-800 truncate">{hymn.number}. {translatedTitle}</p>
+                <CategoryPill category={hymn.category} className="mt-2"/>
+            </Link>
+            <button 
+                onClick={() => toggleLike(hymn)} 
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-white/50 hover:bg-red-100/80 transition-colors opacity-0 group-hover:opacity-100"
+                aria-label={`Like ${translatedTitle}`}
+            >
+                <HeartIcon className={`h-5 w-5 ${isLiked(hymn) ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`} filled={isLiked(hymn)} />
+            </button>
+        </div>
+    );
+};
+
 
 const HomePage: React.FC = () => {
   const [recentHymns, setRecentHymns] = useState<Hymn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { language } = useContext(LanguageContext);
-  const { isLiked, toggleLike } = useLikes();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,21 +93,7 @@ const HomePage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {recentHymns.map(hymn => (
-              <div key={hymn.id} className="relative bg-white p-4 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group">
-                <Link to={`/hymns/${hymn.id}`} className="block">
-                  <p className="font-semibold text-brand-blue-800 truncate">{hymn.number}. {hymn.title[language] || hymn.title.en}</p>
-                  <CategoryPill category={hymn.category} className="mt-2"/>
-                </Link>
-                <button 
-                  onClick={() => toggleLike(hymn)} 
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-white/50 hover:bg-red-100/80 transition-colors opacity-0 group-hover:opacity-100"
-                  aria-label={`Like ${hymn.title[language] || hymn.title.en}`}
-                >
-                    <HeartIcon className={`h-5 w-5 ${isLiked(hymn) ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`} filled={isLiked(hymn)} />
-                </button>
-              </div>
-            ))}
+            {recentHymns.map(hymn => <HymnTile key={hymn.id} hymn={hymn} />)}
           </div>
         )}
       </section>
